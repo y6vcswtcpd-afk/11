@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>注册 - 艺术图库</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .register-container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 450px;
+            padding: 40px;
+            animation: fadeIn 0.6s ease-out;
+        }
+        
+        .register-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .register-header h1 {
+            color: #333;
+            font-size: 28px;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .register-header p {
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .input-row {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .input-row .input-group {
+            flex: 1;
+        }
+        
+        .input-group {
+            margin-bottom: 20px;
+        }
+        
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        
+        .input-group input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: all 0.3s;
+            background: #f8f9fa;
+        }
+        
+        .input-group input:focus {
+            outline: none;
+            border-color: #667eea;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        .captcha-container {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        .captcha-container input {
+            flex: 1;
+        }
+        
+        .captcha-display {
+            width: 120px;
+            height: 50px;
+            background: #f8f9fa;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            overflow: hidden;
+            transition: all 0.3s;
+        }
+        
+        .captcha-display:hover {
+            transform: scale(1.05);
+        }
+        
+        .btn-register {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 10px;
+        }
+        
+        .btn-register:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.2);
+        }
+        
+        .links {
+            text-align: center;
+            margin-top: 25px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+        
+        .links a {
+            color: #667eea;
+            text-decoration: none;
+            font-size: 14px;
+            transition: color 0.3s;
+        }
+        
+        .links a:hover {
+            color: #764ba2;
+            text-decoration: underline;
+        }
+        
+        .refresh-captcha {
+            color: #667eea;
+            cursor: pointer;
+            font-size: 12px;
+            margin-top: 5px;
+            display: inline-block;
+        }
+        
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #fff;
+            border-radius: 50%;
+            border-top-color: transparent;
+            animation: spin 1s linear infinite;
+        }
+        
+        .error-message {
+            color: #e74c3c;
+            font-size: 12px;
+            margin-top: 5px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="register-container">
+        <div class="register-header">
+            <h1>📝 用户注册</h1>
+            <p>加入我们，分享你的艺术</p>
+        </div>
+        
+        <form id="registerForm">
+            <div class="input-row">
+                <div class="input-group">
+                    <label for="phone">手机号</label>
+                    <input type="tel" id="phone" placeholder="请输入手机号" maxlength="11" required>
+                    <div class="error-message" id="phoneError"></div>
+                </div>
+                
+                <div class="input-group">
+                    <label for="username">用户名</label>
+                    <input type="text" id="username" placeholder="请输入用户名" maxlength="20" required>
+                    <div class="error-message" id="usernameError"></div>
+                </div>
+            </div>
+            
+            <div class="input-row">
+                <div class="input-group">
+                    <label for="password">密码</label>
+                    <input type="password" id="password" placeholder="请输入密码" minlength="6" required>
+                    <div class="error-message" id="passwordError"></div>
+                </div>
+                
+                <div class="input-group">
+                    <label for="confirmPassword">确认密码</label>
+                    <input type="password" id="confirmPassword" placeholder="请确认密码" minlength="6" required>
+                    <div class="error-message" id="confirmPasswordError"></div>
+                </div>
+            </div>
+            
+            <div class="input-group">
+                <label for="captcha">验证码</label>
+                <div class="captcha-container">
+                    <input type="text" id="captcha" placeholder="请输入验证码" maxlength="4" required>
+                    <div id="captchaDisplay" class="captcha-display"></div>
+                </div>
+                <span class="refresh-captcha" id="refreshCaptcha">刷新验证码</span>
+                <div class="error-message" id="captchaError"></div>
+            </div>
+            
+            <button type="submit" class="btn-register" id="registerBtn">
+                <span id="registerText">注册</span>
+            </button>
+        </form>
+        
+        <div class="links">
+            <p>已有账号？<a href="index.html">立即登录</a></p>
+        </div>
+    </div>
+
+    <script src="js/utils.js"></script>
+    <script src="js/captcha.js"></script>
+    <script src="js/auth.js"></script>
+    <link rel="stylesheet" href="css/auth.css">
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 注册页加载完成');
+            
+            // 获取DOM元素
+            const registerForm = document.getElementById('registerForm');
+            const captchaDisplay = document.getElementById('captchaDisplay');
+            const refreshCaptcha = document.getElementById('refreshCaptcha');
+            const registerBtn = document.getElementById('registerBtn');
+            const registerText = document.getElementById('registerText');
+            
+            // 刷新验证码显示
+            function refreshCaptchaDisplay() {
+                try {
+                    const captcha = captchaSystem.generateCaptcha();
+                    captchaDisplay.innerHTML = captcha.svg;
+                    console.log('✅ 验证码已生成:', captcha.code);
+                    
+                    // 添加点击刷新事件
+                    captchaDisplay.onclick = refreshCaptchaDisplay;
+                } catch (error) {
+                    console.error('❌ 验证码生成失败:', error);
+                    // 备用方案
+                    captchaDisplay.innerHTML = `
+                        <div style="
+                            width: 100%;
+                            height: 100%;
+                            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            color: white;
+                            font-weight: bold;
+                            font-size: 16px;
+                        ">点击刷新</div>
+                    `;
+                }
+            }
+            
+            // 绑定刷新验证码事件
+            refreshCaptcha.addEventListener('click', function(e) {
+                e.preventDefault();
+                refreshCaptchaDisplay();
+            });
+            
+            // 表单提交
+            registerForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                // 获取表单数据
+                const phone = document.getElementById('phone').value.trim();
+                const username = document.getElementById('username').value.trim();
+                const password = document.getElementById('password').value;
+                const confirmPassword = document.getElementById('confirmPassword').value;
+                const captchaInput = document.getElementById('captcha').value.trim();
+                
+                // 清除错误信息
+                clearErrors();
+                
+                // 验证表单
+                if (!validateForm(phone, username, password, confirmPassword, captchaInput)) {
+                    return;
+                }
+                
+                // 显示加载状态
+                registerBtn.disabled = true;
+                registerText.innerHTML = '<div class="loading"></div> 注册中...';
+                
+                try {
+                    // 模拟网络延迟
+                    await new Promise(resolve => setTimeout(resolve, 800));
+                    
+                    // 执行注册
+                    if (registerUser({ phone, username, password, confirmPassword }, captchaInput)) {
+                        setTimeout(() => {
+                            window.location.href = 'gallery.html';
+                        }, 1000);
+                    } else {
+                        registerBtn.disabled = false;
+                        registerText.textContent = '注册';
+                        refreshCaptchaDisplay();
+                    }
+                } catch (error) {
+                    console.error('注册错误:', error);
+                    showError('passwordError', '注册失败，请重试');
+                    registerBtn.disabled = false;
+                    registerText.textContent = '注册';
+                    refreshCaptchaDisplay();
+                }
+            });
+            
+            // 表单验证
+            function validateForm(phone, username, password, confirmPassword, captchaInput) {
+                let isValid = true;
+                
+                if (!phone) {
+                    showError('phoneError', '请输入手机号');
+                    isValid = false;
+                } else if (!/^1[3-9]\d{9}$/.test(phone)) {
+                    showError('phoneError', '手机号格式不正确');
+                    isValid = false;
+                }
+                
+                if (!username) {
+                    showError('usernameError', '请输入用户名');
+                    isValid = false;
+                } else if (username.length < 2) {
+                    showError('usernameError', '用户名至少2位');
+                    isValid = false;
+                }
+                
+                if (!password) {
+                    showError('passwordError', '请输入密码');
+                    isValid = false;
+                } else if (password.length < 6) {
+                    showError('passwordError', '密码至少6位');
+                    isValid = false;
+                }
+                
+                if (!confirmPassword) {
+                    showError('confirmPasswordError', '请确认密码');
+                    isValid = false;
+                } else if (password !== confirmPassword) {
+                    showError('confirmPasswordError', '两次密码不一致');
+                    isValid = false;
+                }
+                
+                if (!captchaInput) {
+                    showError('captchaError', '请输入验证码');
+                    isValid = false;
+                } else if (captchaInput.length !== 4) {
+                    showError('captchaError', '验证码为4位');
+                    isValid = false;
+                }
+                
+                return isValid;
+            }
+            
+            // 显示错误
+            function showError(elementId, message) {
+                const element = document.getElementById(elementId);
+                if (element) {
+                    element.textContent = message;
+                    element.style.display = 'block';
+                }
+            }
+            
+            // 清除错误
+            function clearErrors() {
+                document.querySelectorAll('.error-message').forEach(el => {
+                    el.style.display = 'none';
+                });
+            }
+            
+            // 初始化验证码显示
+            refreshCaptchaDisplay();
+        });
+    </script>
+</body>
+</html>

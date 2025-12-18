@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>登录 - 艺术图库</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .login-container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
+            padding: 40px;
+            animation: fadeIn 0.6s ease-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .login-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .login-header h1 {
+            color: #333;
+            font-size: 28px;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .login-header p {
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .input-group {
+            margin-bottom: 20px;
+        }
+        
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        
+        .input-group input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: all 0.3s;
+            background: #f8f9fa;
+        }
+        
+        .input-group input:focus {
+            outline: none;
+            border-color: #667eea;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        .captcha-container {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        .captcha-container input {
+            flex: 1;
+        }
+        
+        .captcha-display {
+            width: 120px;
+            height: 50px;
+            background: #f8f9fa;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            overflow: hidden;
+            transition: all 0.3s;
+        }
+        
+        .captcha-display:hover {
+            transform: scale(1.05);
+        }
+        
+        .captcha-display:active {
+            transform: scale(0.95);
+        }
+        
+        .btn-login {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 10px;
+        }
+        
+        .btn-login:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.2);
+        }
+        
+        .btn-login:active {
+            transform: translateY(0);
+        }
+        
+        .btn-login:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .links {
+            text-align: center;
+            margin-top: 25px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+        
+        .links a {
+            color: #667eea;
+            text-decoration: none;
+            font-size: 14px;
+            transition: color 0.3s;
+        }
+        
+        .links a:hover {
+            color: #764ba2;
+            text-decoration: underline;
+        }
+        
+        .error-message {
+            color: #e74c3c;
+            font-size: 12px;
+            margin-top: 5px;
+            display: none;
+        }
+        
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #fff;
+            border-radius: 50%;
+            border-top-color: transparent;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .refresh-captcha {
+            color: #667eea;
+            cursor: pointer;
+            font-size: 12px;
+            margin-top: 5px;
+            display: inline-block;
+        }
+        
+        .refresh-captcha:hover {
+            text-decoration: underline;
+        }
+        
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 12px 20px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            z-index: 1000;
+            animation: slideInRight 0.3s ease;
+        }
+        
+        .toast.success { border-left: 4px solid #2ecc71; }
+        .toast.error { border-left: 4px solid #e74c3c; }
+        .toast.info { border-left: 4px solid #3498db; }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-header">
+            <h1>🎨 艺术图库</h1>
+            <p>发现与分享艺术之美</p>
+        </div>
+        
+        <form id="loginForm">
+            <div class="input-group">
+                <label for="phone">手机号</label>
+                <input type="tel" id="phone" placeholder="请输入手机号" maxlength="11" required>
+                <div class="error-message" id="phoneError"></div>
+            </div>
+            
+            <div class="input-group">
+                <label for="password">密码</label>
+                <input type="password" id="password" placeholder="请输入密码" minlength="6" required>
+                <div class="error-message" id="passwordError"></div>
+            </div>
+            
+            <div class="input-group">
+                <label for="captcha">验证码</label>
+                <div class="captcha-container">
+                    <input type="text" id="captcha" placeholder="请输入验证码" maxlength="4" required>
+                    <div id="captchaDisplay" class="captcha-display"></div>
+                </div>
+                <span class="refresh-captcha" id="refreshCaptcha">刷新验证码</span>
+                <div class="error-message" id="captchaError"></div>
+            </div>
+            
+            <button type="submit" class="btn-login" id="loginBtn">
+                <span id="loginText">登录</span>
+            </button>
+        </form>
+        
+        <div class="links">
+            <p>还没有账号？<a href="register.html">立即注册</a></p>
+        </div>
+    </div>
+
+    <!-- 引入JavaScript文件 -->
+    <script src="js/utils.js"></script>
+    <script src="js/captcha.js"></script>
+    <script src="js/auth.js"></script>
+    <link rel="stylesheet" href="css/auth.css">
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 页面加载完成');
+            
+            // 获取DOM元素
+            const loginForm = document.getElementById('loginForm');
+            const captchaDisplay = document.getElementById('captchaDisplay');
+            const refreshCaptcha = document.getElementById('refreshCaptcha');
+            const loginBtn = document.getElementById('loginBtn');
+            const loginText = document.getElementById('loginText');
+            
+            // 刷新验证码显示
+            function refreshCaptchaDisplay() {
+                try {
+                    const captcha = captchaSystem.generateCaptcha();
+                    captchaDisplay.innerHTML = captcha.svg;
+                    console.log('✅ 验证码已生成:', captcha.code);
+                    
+                    // 添加点击刷新事件
+                    captchaDisplay.onclick = refreshCaptchaDisplay;
+                } catch (error) {
+                    console.error('❌ 验证码生成失败:', error);
+                    // 备用方案
+                    captchaDisplay.innerHTML = `
+                        <div style="
+                            width: 100%;
+                            height: 100%;
+                            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                            display:flex;
+                            align-items: center;
+                            justify-content: center;
+                            color: white;
+                            font-weight: bold;
+                            font-size: 16px;
+                        ">点击刷新</div>
+                    `;
+                }
+            }
+            
+            // 绑定刷新验证码事件
+            refreshCaptcha.addEventListener('click', function(e) {
+                e.preventDefault();
+                refreshCaptchaDisplay();
+            });
+            
+            // 表单提交
+            loginForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                // 获取表单数据
+                const phone = document.getElementById('phone').value.trim();
+                const password = document.getElementById('password').value;
+                const captchaInput = document.getElementById('captcha').value.trim();
+                
+                // 清除错误信息
+                clearErrors();
+                
+                // 验证表单
+                if (!validateForm(phone, password, captchaInput)) {
+                    return;
+                }
+                
+                // 显示加载状态
+                loginBtn.disabled = true;
+                loginText.innerHTML = '<div class="loading"></div> 登录中...';
+                
+                try {
+                    // 模拟网络延迟
+                    await new Promise(resolve => setTimeout(resolve, 800));
+                    
+                    // 执行登录
+                    if (loginUser(phone, password, captchaInput)) {
+                        setTimeout(() => {
+                            window.location.href = 'gallery.html';
+                        }, 1000);
+                    } else {
+                        loginBtn.disabled = false;
+                        loginText.textContent = '登录';
+                        refreshCaptchaDisplay();
+                    }
+                } catch (error) {
+                    console.error('登录错误:', error);
+                    showError('passwordError', '登录失败，请重试');
+                    loginBtn.disabled = false;
+                    loginText.textContent = '登录';
+                    refreshCaptchaDisplay();
+                }
+            });
+            
+            // 表单验证
+            function validateForm(phone, password, captchaInput) {
+                let isValid = true;
+                
+                if (!phone) {
+                    showError('phoneError', '请输入手机号');
+                    isValid = false;
+                } else if (!/^1[3-9]\d{9}$/.test(phone)) {
+                    showError('phoneError', '手机号格式不正确');
+                    isValid = false;
+                }
+                
+                if (!password) {
+                    showError('passwordError', '请输入密码');
+                    isValid = false;
+                } else if (password.length < 6) {
+                    showError('passwordError', '密码至少6位');
+                    isValid = false;
+                }
+                
+                if (!captchaInput) {
+                    showError('captchaError', '请输入验证码');
+                    isValid = false;
+                } else if (captchaInput.length !== 4) {
+                    showError('captchaError', '验证码为4位');
+                    isValid = false;
+                }
+                
+                return isValid;
+            }
+            
+            // 显示错误
+            function showError(elementId, message) {
+                const element = document.getElementById(elementId);
+                if (element) {
+                    element.textContent = message;
+                    element.style.display = 'block';
+                }
+            }
+            
+            // 清除错误
+            function clearErrors() {
+                document.querySelectorAll('.error-message').forEach(el => {
+                    el.style.display = 'none';
+                });
+            }
+            
+            // 自动填充测试账号
+            document.getElementById('phone').value = '13800138000';
+            document.getElementById('password').value = '123456';
+            
+            // 初始化验证码显示
+            refreshCaptchaDisplay();
+        });
+    </script>
+</body>
+</html>

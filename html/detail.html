@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>图片详情 - 艺术图库</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/detail.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        /* 详情页专用样式 */
+        .detail-header {
+            padding: 15px 0;
+            border-bottom: 1px solid #eee;
+            background: white;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .detail-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .detail-content {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 30px;
+            margin-top: 30px;
+        }
+        
+        @media (max-width: 768px) {
+            .detail-content {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .image-viewer {
+            position: relative;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        
+        .image-viewer img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+        
+        .image-zoom {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: rgba(255,255,255,0.8);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 10;
+        }
+        
+        .image-info {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        }
+        
+        .image-title {
+            font-size: 28px;
+            margin-bottom: 10px;
+            color: #333;
+        }
+        
+        .image-author {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+            color: #666;
+        }
+        
+        .author-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #f0f0f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+        
+        .author-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .author-name {
+            font-weight: 500;
+        }
+        
+        .image-description {
+            line-height: 1.8;
+            color: #555;
+            margin-bottom: 25px;
+        }
+        
+        .image-stats {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+        
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #666;
+        }
+        
+        .image-actions {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        
+        .action-btn {
+            padding: 10px 20px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .btn-like {
+            background: #f8f9fa;
+            color: #333;
+            border: 1px solid #e1e5e9;
+        }
+        
+        .btn-like:hover {
+            background: #f0f2f5;
+        }
+        
+        .btn-like.liked {
+            background: #ffeef0;
+            color: #e74c3c;
+            border-color: #fad3d7;
+        }
+        
+        .btn-download {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+        }
+        
+        .btn-download:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+        
+        .image-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 25px;
+        }
+        
+        .tag {
+            background: #f0f0f0;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            color: #555;
+        }
+        
+        .tag:hover {
+            background: #e0e0e0;
+        }
+        
+        .info-card {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+        }
+        
+        .info-card h3 {
+            font-size: 18px;
+            margin-bottom: 15px;
+            color: #333;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .info-card h3 i {
+            color: #667eea;
+        }
+        
+        .comment-form {
+            margin-bottom: 30px;
+        }
+        
+        .comment-form textarea {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            min-height: 100px;
+            margin-bottom: 10px;
+            font-family: inherit;
+        }
+        
+        .comment-form button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+        
+        .comments-list {
+            margin-top: 20px;
+        }
+        
+        .comment-item {
+            padding: 15px 0;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .comment-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .comment-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: #f0f0f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+        
+        .comment-author {
+            font-weight: 500;
+            font-size: 14px;
+        }
+        
+        .comment-date {
+            font-size: 12px;
+            color: #999;
+            margin-left: auto;
+        }
+        
+        .comment-text {
+            color: #555;
+            line-height: 1.6;
+        }
+        
+        .related-images {
+            margin-top: 40px;
+        }
+        
+        .related-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .related-item {
+            border-radius: 8px;
+            overflow: hidden;
+            position: relative;
+            cursor: pointer;
+        }
+        
+        .related-item img {
+            width: 100%;
+            height: 120px;
+            object-fit: cover;
+            transition: transform 0.3s;
+        }
+        
+        .related-item:hover img {
+            transform: scale(1.05);
+        }
+        
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: #667eea;
+            text-decoration: none;
+            margin-bottom: 20px;
+        }
+        
+        .back-btn:hover {
+            text-decoration: underline;
+        }
+        
+        /* 放大镜效果 */
+        .zoom-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+        
+        .zoom-overlay.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+        
+        .zoomed-image {
+            max-width: 90%;
+            max-height: 90%;
+            object-fit: contain;
+        }
+        
+        .close-zoom {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            color: white;
+            font-size: 30px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <!-- 头部导航 -->
+    <header class="detail-header">
+        <div class="container">
+            <a href="gallery.html" class="back-btn">
+                <i class="fas fa-arrow-left"></i>
+                <span>返回图库</span>
+            </a>
+        </div>
+    </header>
+
+    <!-- 主内容区 -->
+    <main class="detail-main">
+        <div class="detail-container">
+            <div class="detail-content">
+                <!-- 左侧：图片查看器 -->
+                <div class="detail-left">
+                    <div class="image-viewer">
+                        <img id="detailImage" src="" alt="图片详情">
+                        <div class="image-zoom" id="zoomBtn">
+                            <i class="fas fa-search-plus"></i>
+                        </div>
+                    </div>
+                    
+                    <div class="image-info">
+                        <h1 id="imageTitle">图片标题</h1>
+                        <div class="image-author">
+                            <div class="author-avatar">
+                                <img src="https://randomuser.me/api/portraits/women/44.jpg" alt="作者头像">
+                            </div>
+                            <span class="author-name" id="imageAuthor">作者名称</span>
+                            <span class="upload-date" id="uploadDate">上传于 2023-01-15</span>
+                        </div>
+                        
+                        <p class="image-description" id="imageDescription">
+                            这是一张美丽的风景图片，拍摄于2023年1月15日。画面中展现了壮丽的山川和清澈的湖水，阳光透过云层洒在湖面上，形成美丽的光影效果。
+                        </p>
+                        
+                        <div class="image-stats">
+                            <div class="stat-item">
+                                <i class="fas fa-heart"></i>
+                                <span id="likeCount">156</span> 喜欢
+                            </div>
+                            <div class="stat-item">
+                                <i class="fas fa-eye"></i>
+                                <span id="viewCount">1,234</span> 浏览
+                            </div>
+                            <div class="stat-item">
+                                <i class="fas fa-download"></i>
+                                <span id="downloadCount">89</span> 下载
+                            </div>
+                        </div>
+                        
+                        <div class="image-actions">
+                            <button class="action-btn btn-like" id="likeBtn">
+                                <i class="far fa-heart"></i>
+                                <span>喜欢</span>
+                            </button>
+                            <button class="action-btn btn-download" id="downloadBtn">
+                                <i class="fas fa-download"></i>
+                                <span>下载</span>
+                            </button>
+                        </div>
+                        
+                        <div class="image-tags" id="imageTags">
+                            <span class="tag">风景</span>
+                            <span class="tag">自然</span>
+                            <span class="tag">山水</span>
+                            <span class="tag">户外</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 右侧：信息和相关图片 -->
+                <div class="detail-right">
+                    <div class="info-card">
+                        <h3><i class="fas fa-chart-line"></i> 统计数据</h3>
+                        <p>分类: <span id="imageCategory">风景</span></p>
+                        <p>尺寸: <span id="imageSize">1920x1080</span></p>
+                        <p>文件大小: <span id="fileSize">2.4 MB</span></p>
+                        <p>上传时间: <span id="uploadTime">2023-01-15 14:30</span></p>
+                    </div>
+                    
+                    <div class="info-card">
+                        <h3><i class="fas fa-comment"></i> 评论</h3>
+                        <div class="comment-form">
+                            <textarea placeholder="写下你的评论..."></textarea>
+                            <button type="submit">发表评论</button>
+                        </div>
+                        
+                        <div class="comments-list" id="commentsList">
+                            <div class="comment-item">
+                                <div class="comment-header">
+                                    <div class="comment-avatar">
+                                        <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="用户头像">
+                                    </div>
+                                    <span class="comment-author">摄影爱好者</span>
+                                    <span class="comment-date">2023-01-16</span>
+                                </div>
+                                <p class="comment-text">
+                                    这张照片的光影效果太棒了！构图也很完美，让人仿佛身临其境。
+                                </p>
+                            </div>
+                            
+                            <div class="comment-item">
+                                <div class="comment-header">
+                                    <div class="comment-avatar">
+                                        <img src="https://randomuser.me/api/portraits/women/65.jpg" alt="用户头像">
+                                    </div>
+                                    <span class="comment-author">艺术评论家</span>
+                                    <span class="comment-date">2023-01-15</span>
+                                </div>
+                                <p class="comment-text">
+                                    色彩搭配非常和谐，特别是天空和水面的过渡处理得很自然。
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="info-card related-images">
+                        <h3><i class="fas fa-images"></i> 相关图片</h3>
+                        <div class="related-grid" id="relatedImages">
+                            <!-- 相关图片将通过JS动态加载 -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- 图片放大镜 -->
+    <div class="zoom-overlay" id="zoomOverlay">
+        <span class="close-zoom" id="closeZoom">
+            <i class="fas fa-times"></i>
+        </span>
+        <img class="zoomed-image" id="zoomedImage" src="" alt="放大图片">
+    </div>
+
+    <!-- 脚本文件 -->
+    <script src="js/utils.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/detail.js"></script>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🖼️ 图片详情页加载完成');
+            
+            // 检查登录状态
+            if (!authSystem.isLoggedIn()) {
+                authSystem.redirectToLogin();
+                return;
+            }
+            
+            // 从URL获取图片ID
+            const urlParams = new URLSearchParams(window.location.search);
+            const imageId = urlParams.get('id');
+            
+            if (!imageId) {
+                console.error('未找到图片ID');
+                window.location.href = 'gallery.html';
+                return;
+            }
+            
+            // 获取图片数据
+            const images = JSON.parse(localStorage.getItem('images') || '[]');
+            const imageData = images.find(img => img.id == imageId);
+            
+            if (!imageData) {
+                console.error('未找到图片数据');
+                window.location.href = 'gallery.html';
+                return;
+            }
+            
+            // 更新页面
+            updatePage(imageData);
+            
+            // 增加浏览量
+            incrementViews(imageData);
+            
+            // 绑定事件
+            bindEvents(imageData);
+            
+            // 加载相关图片
+            loadRelatedImages(imageData);
+            
+            // 更新当前用户的历史记录
+            updateUserHistory(imageId);
+        });
+        
+        // 更新页面内容
+        function updatePage(image) {
+            document.title = `${image.title} - 图片详情`;
+            document.getElementById('detailImage').src = image.url;
+            document.getElementById('detailImage').alt = image.title;
+            document.getElementById('imageTitle').textContent = image.title;
+            document.getElementById('imageAuthor').textContent = image.author;
+            document.getElementById('imageDescription').textContent = image.description || '这张图片还没有描述...';
+            document.getElementById('likeCount').textContent = image.likes;
+            document.getElementById('viewCount').textContent = image.views;
+            document.getElementById('downloadCount').textContent = image.downloads || 0;
+            document.getElementById('uploadDate').textContent = `上传于 ${utils.formatDate(image.uploadDate)}`;
+            document.getElementById('imageCategory').textContent = image.category;
+            
+            // 更新标签
+            const tagsContainer = document.getElementById('imageTags');
+            if (tagsContainer && image.tags) {
+                tagsContainer.innerHTML = image.tags.map(tag => 
+                    `<span class="tag">${tag}</span>`
+                ).join('');
+            }
+            
+            // 更新喜欢按钮状态
+            const currentUser = authSystem.getCurrentUser();
+            if (currentUser && currentUser.favorites.includes(image.id)) {
+                document.getElementById('likeBtn').classList.add('liked');
+                document.getElementById('likeBtn').innerHTML = '<i class="fas fa-heart"></i><span>已喜欢</span>';
+            }
+        }
+        
+        // 增加浏览量
+        function incrementViews(image) {
+            image.views = (image.views || 0) + 1;
+            updateImageData(image);
+        }
+        
+        // 绑定事件
+        function bindEvents(image) {
+            // 喜欢按钮
+            document.getElementById('likeBtn').addEventListener('click', function() {
+                toggleLike(image);
+            });
+            
+            // 下载按钮
+            document.getElementById('downloadBtn').addEventListener('click', function() {
+                downloadImage(image);
+            });
+            
+            // 放大镜功能
+            const zoomBtn = document.getElementById('zoomBtn');
+            const zoomOverlay = document.getElementById('zoomOverlay');
+            const zoomedImage = document.getElementById('zoomedImage');
+            const closeZoom = document.getElementById('closeZoom');
+            
+            if (zoomBtn && zoomOverlay && zoomedImage) {
+                zoomBtn.addEventListener('click', function() {
+                    zoomedImage.src = image.url;
+                    zoomOverlay.classList.add('active');
+                });
+                
+                closeZoom.addEventListener('click', function() {
+                    zoomOverlay.classList.remove('active');
+                });
+                
+                zoomOverlay.addEventListener('click', function(e) {
+                    if (e.target === zoomOverlay) {
+                        zoomOverlay.classList.remove('active');
+                    }
+                });
+            }
+            
+            // 标签点击事件
+            document.querySelectorAll('.tag').forEach(tag => {
+                tag.addEventListener('click', function() {
+                    const tagName = this.textContent;
+                    window.location.href = `gallery.html?tag=${encodeURIComponent(tagName)}`;
+                });
+            });
+        }
+        
+        // 切换喜欢状态
+        function toggleLike(image) {
+            const currentUser = authSystem.getCurrentUser();
+            if (!currentUser) {
+                authSystem.showToast('请先登录', 'error');
+                return;
+            }
+            
+            const likeBtn = document.getElementById('likeBtn');
+            const isLiked = likeBtn.classList.contains('liked');
+            
+            if (isLiked) {
+                // 取消喜欢
+                image.likes--;
+                currentUser.favorites = currentUser.favorites.filter(id => id != image.id);
+                likeBtn.classList.remove('liked');
+                likeBtn.innerHTML = '<i class="far fa-heart"></i><span>喜欢</span>';
+                authSystem.showToast('已取消喜欢', 'info');
+            } else {
+                // 喜欢
+                image.likes++;
+                currentUser.favorites.push(image.id);
+                likeBtn.classList.add('liked');
+                likeBtn.innerHTML = '<i class="fas fa-heart"></i><span>已喜欢</span>';
+                authSystem.showToast('已添加到喜欢', 'success');
+            }
+            
+            // 更新计数显示
+            document.getElementById('likeCount').textContent = image.likes;
+            
+            // 更新数据
+            updateImageData(image);
+            authSystem.updateUser(currentUser);
+        }
+        
+        // 下载图片
+        function downloadImage(image) {
+            const currentUser = authSystem.getCurrentUser();
+            if (!currentUser) {
+                authSystem.showToast('请先登录', 'error');
+                return;
+            }
+            
+            // 模拟下载
+            console.log('下载图片:', image.title);
+            authSystem.showToast('开始下载...', 'info');
+            
+            // 增加下载计数
+            image.downloads = (image.downloads || 0) + 1;
+            document.getElementById('downloadCount').textContent = image.downloads;
+            updateImageData(image);
+            
+            // 实际下载功能
+            setTimeout(() => {
+                const link = document.createElement('a');
+                link.href = image.url;
+                link.download = `${image.title.replace(/\s+/g, '_')}.jpg`;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                
+                authSystem.showToast('下载完成', 'success');
+            }, 1000);
+        }
+        
+        // 加载相关图片
+        function loadRelatedImages(image) {
+            const images = JSON.parse(localStorage.getItem('images') || '[]');
+            const relatedImages = images
+                .filter(img => 
+                    img.id != image.id && 
+                    (img.category === image.category || 
+                     img.tags.some(tag => image.tags.includes(tag)))
+                )
+                .slice(0, 6); // 最多显示6张相关图片
+            
+            const relatedContainer = document.getElementById('relatedImages');
+            if (relatedContainer) {
+                relatedContainer.innerHTML = relatedImages.map(img => `
+                    <div class="related-item" data-id="${img.id}">
+                        <img src="${img.thumbnail}" alt="${img.title}">
+                    </div>
+                `).join('');
+                
+                // 绑定点击事件
+                document.querySelectorAll('.related-item').forEach(item => {
+                    item.addEventListener('click', function() {
+                        const id = this.getAttribute('data-id');
+                        window.location.href = `detail.html?id=${id}`;
+                    });
+                });
+            }
+        }
+        
+        // 更新用户历史记录
+        function updateUserHistory(imageId) {
+            const currentUser = authSystem.getCurrentUser();
+            if (!currentUser) return;
+            
+            // 添加到浏览历史
+            if (!currentUser.history.includes(imageId)) {
+                currentUser.history.unshift(imageId);
+                
+                // 最多保留50条历史记录
+                if (currentUser.history.length > 50) {
+                    currentUser.history = currentUser.history.slice(0, 50);
+                }
+                
+                authSystem.updateUser(currentUser);
+            }
+        }
+        
+        // 更新图片数据
+        function updateImageData(image) {
+            const images = JSON.parse(localStorage.getItem('images') || '[]');
+            const index = images.findIndex(img => img.id === image.id);
+            if (index !== -1) {
+                images[index] = image;
+                localStorage.setItem('images', JSON.stringify(images));
+            }
+        }
+    </script>
+</body>
+</html>
